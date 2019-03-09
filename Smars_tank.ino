@@ -11,7 +11,7 @@
 #include "CMDParser.h"
 #include "Buttons.h"
 #include "InfraRed.h"
-
+#include "InfraRed_Interrupt.h"
 
 
 
@@ -36,6 +36,8 @@ void setup(){
   setup_hbridge();
     //Thiết lập cảm biến hồng ngoại
   setup_infrared();
+  setup_infrared_interrupt();
+  
   //Thiet lap cho nut bam cam ung
   setup_buttons();
 
