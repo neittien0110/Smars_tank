@@ -15,8 +15,8 @@
 
 
 
-const int HC06_TX_PIN = 12;
-const int HC06_RX_PIN = 13;
+const int HC06_TX_PIN = 10;
+const int HC06_RX_PIN = 11;
 
 SoftwareSerial hc06(HC06_RX_PIN,HC06_TX_PIN);
 
@@ -99,7 +99,7 @@ void loop() {
         {
           case 'l': //---------------------LED--(nen dat truoc Engine de tranh bi delay)--------
                     break;
-          
+          /
           case 'm'://---------------------ENGINE----------------------------------------------
                     loop_hbridge(cmd_params[1],cmd_params[2]);
                     break;
@@ -112,7 +112,7 @@ void loop() {
       //         CÁC XỬ LÝ KHI DÒ ĐƯỜNG BẰNG CẢM BIẾN HỒNG NGOẠI CHIẾU XUỐNG ĐẤT
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
         if (InfraredSensorValue> 100) 
-        {
+        {;
             MotorPower(100,50);
         } else {
             MotorPower(50,100);
