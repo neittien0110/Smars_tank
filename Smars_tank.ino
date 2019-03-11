@@ -12,7 +12,7 @@
 #include "Buttons.h"
 #include "InfraRed.h"
 #include "InfraRed_Interrupt.h"
-
+#include "Ultrasonic.h"
 
 
 const int HC06_TX_PIN = 10;
@@ -34,9 +34,12 @@ void setup(){
   hc06.begin(9600);
   //Thiet lap cho dong co 1 chieu giam toc
   setup_hbridge();
-    //Thiết lập cảm biến hồng ngoại
+  //Thiết lập cảm biến hồng ngoại
   setup_infrared();
   setup_infrared_interrupt();
+
+  //Thiết lập cho cảm biến siêu âm
+  setup_ultrasonic();
   
   //Thiet lap cho nut bam cam ung
   setup_buttons();
@@ -82,6 +85,7 @@ void loop() {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   loop_infrared(); //áp dụng cho mode dò đường
   loop_buttons();  //do nothing
+  loop_ultrasonic();  //áp dụng cho mode bodyguard
   
 
   switch (tank_mode) {
@@ -99,7 +103,6 @@ void loop() {
         {
           case 'l': //---------------------LED--(nen dat truoc Engine de tranh bi delay)--------
                     break;
-          /
           case 'm'://---------------------ENGINE----------------------------------------------
                     loop_hbridge(cmd_params[1],cmd_params[2]);
                     break;
