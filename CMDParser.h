@@ -1,5 +1,5 @@
 // Hướng dẫn sử dụng
-const String HELP_CMD = "   CMD Syntaxt: type[;param1~9]";
+const String HELP_CMD = "   CMD Syntax: type[;param1~9]";
 
 
 bool  cmd_done; // Bao hieu lenh cua user da duoc xu ly chua

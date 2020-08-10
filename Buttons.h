@@ -1,5 +1,8 @@
 // @remark   Arduino UNO, Nano, Mini chi cho phep ngat o chan pin 2 (INT 0) va pin 3 (INT 1)
 #include "InfraRed_Interrupt.h"
+
+#include "LedMonitor.h"
+
 // Hướng dẫn sử dụng
 const String HELP_BUTTON = "   Button: button1 o pin2.  Bam nut de chuyen che do REMOTE(bluetooth) --> TRACK (find path) --> TRACK INTERRUPT (find path)-->  BODYGUARD (keep distance)";
 
@@ -31,13 +34,19 @@ void ISR_button1() {
   
   button1_newval = ReadButton1()  ;
   // Chuyển chế độ hoạt động của xe theo kiểu round robin
-  tank_mode =  (tank_mode + 1) % nothing;
+  tank_mode =  (int) ((tank_mode + 1) % nothing);
+  
 
   Serial.print("Che do hoat dong: ");
   Serial.println(tank_mode);
-
+  Serial.println(String(tank_mode));
+  
+  pantalla.borrar();
+  pantalla.escribirCaracter(48+tank_mode,1); // Hien thi che do lam viec ra man hinh
+  
   // Luon tat dong co
   MotorPower(0,0);
+  delay(300);
 
   // Nếu mới chuyển tới chế độ dò đường bằng ngắt thì phải kích hoạt ngắt
   if (tank_mode == interrupt_track) 
@@ -67,4 +76,6 @@ void setup_buttons() {
    pinMode(PIN_BUTTON_1, INPUT); 
    //Thiet lap chuong trinh con phuc vu ngat cho su kien cua pin, CHANGE | LOW  | RISING | FALLING 
    attachInterrupt(digitalPinToInterrupt(PIN_BUTTON_1), ISR_button1, RISING);
+   // Khởi tạo chế độ làm việc
+   tank_mode = remote;
 } 

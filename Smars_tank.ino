@@ -1,130 +1,55 @@
-//  Xe SMARS với thành phần
-//    + Arduino Uno hoặc Nano
-//    + Shield Mở Rộng Arduino Nano (Module Arduino Socket Full Nano) tương thích cả Uno và Nano, https://chotroihn.vn/shield-mo-rong-arduino-nano-tai-linh-kien-dien-tu-3m
-//    + 2 động cơ Động Cơ Giảm Tốc JA12-N20 3-12VDC,    https://chotroihn.vn/dong-co-giam-toc-ja12-n20-3-12vdc
-//    + Mạch cầu H mini để điều khiển 2 động cơ giảm tốc, https://chotroihn.vn/search?query=mach+cau+mini
-//    + Tăng áp 2-24v --> 5-28V 2A ,   https://chotroihn.vn/module-boost-dc-dc-2-24vdc-2a-mt3608-k1a9-4-4-1g, 
-//      hoặc sử dụng module xịn hơn,   https://chotroihn.vn/module-boost-dc-dc-xl6009-5-40v-4a-k1a9-5-10g
+#include <Arduino.h>
+#include <WMHead.h>
+#include <WMBoard.h>
 
-#include <SoftwareSerial.h>
-#include "HBridge_Motor.h"
-#include "CMDParser.h"
-#include "Buttons.h"
-#include "InfraRed.h"
-#include "InfraRed_Interrupt.h"
-#include "Ultrasonic.h"
+double angle_rad = PI/180.0;
+double angle_deg = 180.0/PI;
+WMRGBLed rgbLED(0,4);
+///Đèn hồng ngoại nhận tín hiệu từ điều khiển
+WMBoardIR boardIr(13);
+/// Tạo hanlder điều khiển động cơ trái với 2 pin 8(hướng quay), và 6(công suất PWM)
+WMDCMotor motor1(8);
+/// Tạo hanlder điều khiển động cơ phải với 2 pin 7(hướng quay), và 5(công suất PWM)
+WMDCMotor motor2(7);
 
 
-const int HC06_TX_PIN = 10;
-const int HC06_RX_PIN = 11;
-
-SoftwareSerial hc06(HC06_RX_PIN,HC06_TX_PIN);
 
 void setup(){
-  //Initialize Serial Monitor
-  Serial.begin(9600);
-  //Thiết lập bộ phân tích cú pháp lệnh qua serial (bluetooth)
-  setup_cmd();
-
-  //trang thai hoat dong ban dau
-  tank_mode = remote;
-  
-  hc06.println("Smars (remixed by TienND)");
-  //Thiet lap cho giao tiep bluetooth
-  hc06.begin(9600);
-  //Thiet lap cho dong co 1 chieu giam toc
-  setup_hbridge();
-  //Thiết lập cảm biến hồng ngoại
-  setup_infrared();
-  setup_infrared_interrupt();
-
-  //Thiết lập cho cảm biến siêu âm
-  setup_ultrasonic();
-  
-  //Thiet lap cho nut bam cam ung
-  setup_buttons();
-
-  if (ReadButton1() > 0)
-  {
-     //Tự kiểm tra;
-     Seft_Test();
-  }
-  
+    randomSeed(A0);
+    rgbLED.setColor(8,8);
+    rgbLED.show();
+    boardIr.begin();
+    
 }
 
-void Seft_Test()
-{
-    Serial.println("Tu kiem tra hoat dong cua motor");
-    MotorPower(100,100);
-    delay(3000);
-    MotorPower(-100,-10);
-    delay(3000);    
-    MotorPower(-10,-100);
-    delay(3000);    
-    MotorPower(-100,-100);
-    delay(3000);    
-    MotorPower(0,-0);
-
-    for (int i = 0; i <3000;i++)
-    {
-      Serial.println(ReadInfraRed());
-    }
-}
- 
-
-
-void loop() {
-
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //        CÁC XỬ LÝ KHI CÓ LỆNH TỪ BAN PHIM
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //  Khong xu ly kieu polling, ma xu ly dang interrupt
-
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //        LẤY SỐ LIỆU TỪ CÁC CẢM BIẾN
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  loop_infrared(); //áp dụng cho mode dò đường
-  loop_buttons();  //do nothing
-  loop_ultrasonic();  //áp dụng cho mode bodyguard
-  
-
-  switch (tank_mode) {
-      case remote:
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      //        CÁC XỬ LÝ KHI CÓ LỆNH TỪ SERIAL
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      if (hc06.available()) {
-        hc06.readBytesUntil('\n',cmd,40);
-        //Serial.write("Thưc hien lenh "); 
-        //Serial.println(cmd);
-        // Phan tich cu phap lenh
-        CMDParser(cmd);
-        switch (cmd_params[0][0])
-        {
-          case 'l': //---------------------LED--(nen dat truoc Engine de tranh bi delay)--------
-                    break;
-          case 'm'://---------------------ENGINE----------------------------------------------
-                    loop_hbridge(cmd_params[1],cmd_params[2]);
-                    break;
-        }
-        FINISH_CMD: return;
+void loop(){
+  ///Nếu nhấn phím số 2 thì xe đi tiến với tốc độ 50/100
+    if(boardIr.keyPressed(24)){
+        motor1.reverseRun(50);
+        motor2.reverseRun(50);
       }
-      break;
-      case track:
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      //         CÁC XỬ LÝ KHI DÒ ĐƯỜNG BẰNG CẢM BIẾN HỒNG NGOẠI CHIẾU XUỐNG ĐẤT
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-        if (InfraredSensorValue> 100) 
-        {;
-            MotorPower(100,50);
-        } else {
-            MotorPower(50,100);
-        }
-        break;
-      case bodyguard:
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      //         CÁC XỬ LÝ KHI BÁM THEO VẬT CHỦ BẰNG SIÊU ÂM
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-        break;      
-  }
+  ///Nếu nhấn phím số 8 thì xe đi lùi với tốc độ 50/100    
+    else if(boardIr.keyPressed(74)){
+            motor1.reverseRun(-50);
+            motor2.reverseRun(-50);
+      }
+  ///Nếu nhấn phím số 4 thì xe rẽ trái    
+    else if(boardIr.keyPressed(16)){
+                motor1.reverseRun(40);
+                motor2.reverseRun(70);
+            }
+  ///Nếu nhấn phím số 6 thì xe rẽ trái          
+    else if(boardIr.keyPressed(90)){
+                motor1.reverseRun(70);
+                motor2.reverseRun(40);
+            }
+  ///Nếu nhấn phím số 5 thì xe dừng          
+    else if(boardIr.keyPressed(56)){
+                motor1.reverseRun(0);
+                motor2.reverseRun(0);
+            }
+   
+    boardIr.startDecode();
+    
+    
 }

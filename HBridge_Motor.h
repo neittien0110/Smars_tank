@@ -4,10 +4,10 @@
 
 const String  HELP_HBRIDGE = "   H-bridge Mini cmd: m;<left power>;<right power>. Eg: m;100;-85   ";
 
-const int MOTOR_11  = 4;
-const int MOTOR_12  = 5;
-const int MOTOR_21  = 6;
-const int MOTOR_22  = 7;
+const int MOTOR_11  = A0;
+const int MOTOR_12  = A1;
+const int MOTOR_21  = A2;
+const int MOTOR_22  = A3;
 const char MOTOR_CMD_TYPE  = 'm';  // Kí tự nhận dạng lệnh serial là dành cho động cơ. Kí tự đầu tiên là m 
 
 //  Thiết lập sức mạnh của động cơ DC 1 chiều 

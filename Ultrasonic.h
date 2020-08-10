@@ -2,8 +2,8 @@
 const String HELP_ULTRASONIC = "   ";
 
 //Tham khảo từ http://mualinhkien.vn/san-pham/34/cam-bien-sieu-am-srf04.html
-#define ECHOPIN 13
-#define TRIGPIN 12
+#define ECHOPIN 10
+#define TRIGPIN 11
 
 int UltrasonicSensorValue; //Giá trị thô lấy từ module siêu âm
 
@@ -38,5 +38,5 @@ void setup_ultrasonic(){
 void loop_ultrasonic()
 {  
     UltrasonicSensorValue = get_distance();
-    Serial.println(UltrasonicSensorValue);                    // Hiển thị giá trị đo
+    //Serial.println(UltrasonicSensorValue);                    // Hiển thị giá trị đo
 }

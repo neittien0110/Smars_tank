@@ -20,9 +20,9 @@ void ISR_deviation() {
   // thiết lập hoạt động đáp ứng của động cơ
   if (D0 == 1) 
   {
-    MotorPower(0,100);
+    MotorPower(0,-100);
   } else {
-    MotorPower(100,0);
+    MotorPower(-100,0);
   }
 } 
 

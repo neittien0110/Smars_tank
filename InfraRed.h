@@ -1,6 +1,6 @@
 const String  HELP_INFRARED = "   Infrared: gia tri doc tu pin A0, dai gia tri 0~1023";
 
-const int INFRARED_ANALOG_PIN  = A0;
+const int INFRARED_ANALOG_PIN  = A4;
 int InfraredSensorValue; //Giá trị thô lấy từ cảm biến, phạm vi 0~1023
 
 int ReadInfraRed() {
